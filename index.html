@@ -214,7 +214,7 @@
         </div>
 
         <!-- Content Container -->
-        <div class="flex-1 p-2 sm:p-4 md:p-6 overflow-hidden relative">
+        <div class="flex-1 overflow-hidden relative">
             
             <!-- Loading Indicator Overlay -->
             <div id="loading-overlay" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
@@ -224,16 +224,16 @@
 
             <!-- Iframes (Pre-loaded for faster switching) -->
             <div id="tab-serie-armonica" class="w-full h-full fade-in">
-                <iframe src="https://juanmiguel0927.github.io/SerieArmonica/" class="iframe-container" title="Serie Armónica" onload="hideLoading()"></iframe>
+                <iframe src="https://juanmiguel0927.github.io/SerieArmonica/" class="iframe-container !rounded-none shadow-none" title="Serie Armónica" onload="hideLoading()"></iframe>
             </div>
 
             <div id="tab-drops" class="w-full h-full hidden">
                 <!-- Using data-src to lazy load when tab is clicked for the first time -->
-                <iframe data-src="https://juanmiguel0927.github.io/Drops/" class="iframe-container" title="Drops" onload="hideLoading()"></iframe>
+                <iframe data-src="https://juanmiguel0927.github.io/Drops/" class="iframe-container !rounded-none shadow-none" title="Drops" onload="hideLoading()"></iframe>
             </div>
 
             <div id="tab-armaduras" class="w-full h-full hidden">
-                <iframe data-src="https://juanmiguel0927.github.io/Armaduras/" class="iframe-container" title="Armaduras" onload="hideLoading()"></iframe>
+                <iframe data-src="https://juanmiguel0927.github.io/Armaduras/" class="iframe-container !rounded-none shadow-none" title="Armaduras" onload="hideLoading()"></iframe>
             </div>
         </div>
     </main>
