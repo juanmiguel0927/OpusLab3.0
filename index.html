@@ -22,6 +22,11 @@
                 title: 'Armaduras',
                 iconHtml: '<span class="font-serif text-xl tracking-tighter mr-2 text-blue-400">𝄞𝄢</span>',
                 url: 'https://juanmiguel0927.github.io/Armaduras/'
+            },
+            'aprox-leadsheet': {
+                title: 'Aprox. Lead Sheet',
+                iconHtml: '<i class="fa-solid fa-file-lines mr-2 text-blue-400"></i>',
+                url: 'https://juanmiguel0927.github.io/AproxLeadSheet/'
             }
         };
 
@@ -53,14 +58,13 @@
             buttonElement.classList.add('active', 'border-blue-500', 'text-blue-400');
 
             // 2. Hide all tabs and prepare to show the new one
-            document.getElementById('tab-serie-armonica').classList.add('hidden');
-            document.getElementById('tab-serie-armonica').classList.remove('fade-in');
-            
-            document.getElementById('tab-drops').classList.add('hidden');
-            document.getElementById('tab-drops').classList.remove('fade-in');
-            
-            document.getElementById('tab-armaduras').classList.add('hidden');
-            document.getElementById('tab-armaduras').classList.remove('fade-in');
+            Object.keys(tools).forEach(id => {
+                const el = document.getElementById(`tab-${id}`);
+                if (el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('fade-in');
+                }
+            });
 
             // 3. Update Header
             const tool = tools[tabId];
@@ -193,6 +197,11 @@
                 <span class="font-serif text-lg leading-none tracking-tighter pt-0.5">𝄞𝄢</span>
                 <span class="font-medium">Armaduras</span>
             </button>
+            
+            <button onclick="switchTab('aprox-leadsheet', this)" class="tab-button flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap">
+                <i class="fa-solid fa-file-lines"></i>
+                <span class="font-medium">Aprox. Lead Sheet</span>
+            </button>
         </nav>
         
         <!-- Controls (Hidden on very small screens, visible on md and up) -->
@@ -234,6 +243,10 @@
 
             <div id="tab-armaduras" class="w-full h-full hidden">
                 <iframe data-src="https://juanmiguel0927.github.io/Armaduras/" class="iframe-container !rounded-none shadow-none" title="Armaduras" onload="hideLoading()"></iframe>
+            </div>
+
+            <div id="tab-aprox-leadsheet" class="w-full h-full hidden">
+                <iframe data-src="https://juanmiguel0927.github.io/AproxLeadSheet/" class="iframe-container !rounded-none shadow-none" title="Aproximación al Lead Sheet" onload="hideLoading()"></iframe>
             </div>
         </div>
     </main>
