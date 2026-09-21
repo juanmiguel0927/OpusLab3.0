@@ -100,6 +100,46 @@
                 iframe.src = currentSrc;
             }, 50);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Read the main URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 2. Detect the tool parameter
+            const toolToLoad = urlParams.get('tool');
+
+            // 3. Routing logic based on the tool
+            if (toolToLoad === 'leadsheet') {
+                const targetTabId = 'aprox-leadsheet';
+                
+                // Get the tab button element to simulate the activation styles
+                // We use a query selector to find the button associated with this tabId
+                const targetButton = document.querySelector(`button[onclick*="'${targetTabId}'"]`);
+                
+                if (targetButton) {
+                    // Activate the tab using the existing function
+                    switchTab(targetTabId, targetButton);
+
+                    // 4. Inject all URL parameters into the iframe src
+                    const tabContainer = document.getElementById(`tab-${targetTabId}`);
+                    const iframe = tabContainer.querySelector('iframe');
+                    
+                    // The switchTab function handles lazy loading by reading data-src.
+                    // If it was just lazy loaded, it moved data-src to src.
+                    // We need to append the parameters to whatever the current src is.
+                    
+                    // Base URL of the iframe (without parameters)
+                    const baseUrl = 'https://juanmiguel0927.github.io/AproxLeadSheet/';
+                    
+                    // Reconstruct the full window.location.search string (e.g. "?tool=leadsheet&prog=6")
+                    const queryString = window.location.search;
+                    
+                    // Set the new source with parameters
+                    iframe.src = baseUrl + queryString;
+                }
+            }
+            // Note: You can easily expand this later with `else if (toolToLoad === 'another-tool')`
+        });
     </script>
     <style>
         body {
