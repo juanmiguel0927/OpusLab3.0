@@ -27,6 +27,11 @@
                 title: 'Aprox. Lead Sheet',
                 iconHtml: '<i class="fa-solid fa-file-lines mr-2 text-blue-400"></i>',
                 url: 'https://juanmiguel0927.github.io/AproxLeadSheet/'
+            },
+            'mapa-tonal': {
+                title: 'Mapa Tonal',
+                iconHtml: '<i class="fa-solid fa-map mr-2 text-blue-400"></i>',
+                url: 'https://juanmiguel0927.github.io/MapaTonal/'
             }
         };
 
@@ -242,6 +247,11 @@
                 <i class="fa-solid fa-file-lines"></i>
                 <span class="font-medium">Aprox. Lead Sheet</span>
             </button>
+            
+            <button onclick="switchTab('mapa-tonal', this)" class="tab-button flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap">
+                <i class="fa-solid fa-map"></i>
+                <span class="font-medium">Mapa Tonal</span>
+            </button>
         </nav>
         
         <!-- Controls (Hidden on very small screens, visible on md and up) -->
@@ -287,6 +297,10 @@
 
             <div id="tab-aprox-leadsheet" class="w-full h-full hidden">
                 <iframe data-src="https://juanmiguel0927.github.io/AproxLeadSheet/" class="iframe-container !rounded-none shadow-none" title="Aproximación al Lead Sheet" onload="hideLoading()"></iframe>
+            </div>
+
+            <div id="tab-mapa-tonal" class="w-full h-full hidden">
+                <iframe data-src="https://juanmiguel0927.github.io/MapaTonal/" class="iframe-container !rounded-none shadow-none" title="Mapa Tonal" onload="hideLoading()"></iframe>
             </div>
         </div>
     </main>
