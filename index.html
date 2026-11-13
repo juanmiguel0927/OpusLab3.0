@@ -2,8 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="OpusLab 3.0">
     <title>OpusLab 3.0</title>
+    <!-- Icono SVG embebido para pestaña y dispositivos móviles -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232563eb'/%3E%3Cpath d='M38 22h24v6H57v14.6L74.5 71a8 8 0 0 1-6.8 12H32.3a8 8 0 0 1-6.8-12L43 42.6V28h-5v-6zm10 24.4L34.7 68h30.6L52 46.4V28h-4v18.4z' fill='white'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232563eb'/%3E%3Cpath d='M38 22h24v6H57v14.6L74.5 71a8 8 0 0 1-6.8 12H32.3a8 8 0 0 1-6.8-12L43 42.6V28h-5v-6zm10 24.4L34.7 68h30.6L52 46.4V28h-4v18.4z' fill='white'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -11,32 +18,373 @@
             'serie-armonica': {
                 title: 'Serie Armónica',
                 iconHtml: '<i class="fa-solid fa-wave-square mr-2 text-blue-400"></i>',
-                url: 'https://juanmiguel0927.github.io/SerieArmonica/'
+                url: 'https://juanmiguel0927.github.io/SerieArmonica/',
+                shortcut: 'Alt + 1',
+                minMobileWidth: 380
             },
             'drops': {
                 title: 'Drops',
                 iconHtml: '<i class="fa-solid fa-music mr-2 text-blue-400"></i>',
-                url: 'https://juanmiguel0927.github.io/Drops/'
+                url: 'https://juanmiguel0927.github.io/Drops/',
+                shortcut: 'Alt + 2',
+                // Ancho mínimo requerido por la cabecera de Drops para que el botón de tema (sol/luna) no se corte
+                minMobileWidth: 435
             },
             'armaduras': {
                 title: 'Armaduras',
                 iconHtml: '<span class="font-serif text-xl tracking-tighter mr-2 text-blue-400">𝄞𝄢</span>',
-                url: 'https://juanmiguel0927.github.io/Armaduras/'
+                url: 'https://juanmiguel0927.github.io/Armaduras/',
+                shortcut: 'Alt + 3',
+                minMobileWidth: 380
             },
             'aprox-leadsheet': {
                 title: 'Aprox. Lead Sheet',
                 iconHtml: '<i class="fa-solid fa-file-lines mr-2 text-blue-400"></i>',
-                url: 'https://juanmiguel0927.github.io/AproxLeadSheet/'
+                url: 'https://juanmiguel0927.github.io/AproxLeadSheet/',
+                shortcut: 'Alt + 4',
+                alias: 'leadsheet',
+                minMobileWidth: 380
             },
             'mapa-tonal': {
                 title: 'Mapa Tonal',
                 iconHtml: '<i class="fa-solid fa-map mr-2 text-blue-400"></i>',
-                url: 'https://juanmiguel0927.github.io/MapaTonal/'
+                url: 'https://juanmiguel0927.github.io/MapaTonal/',
+                shortcut: 'Alt + 5',
+                minMobileWidth: 380
             }
         };
 
         let currentTabId = 'serie-armonica';
+        let isZenMode = false;
+        let isUtilityDrawerOpen = false;
+        let autoFitMobile = true; // Auto-encuadre inteligente para móviles
 
+        // ==========================================
+        // AJUSTE INTELIGENTE DE ENCUADRE MÓVIL
+        // ==========================================
+        function applyResponsiveIframeScale() {
+            const screenW = window.innerWidth;
+            const fitBtnLabel = document.getElementById('mobile-fit-label');
+
+            Object.keys(tools).forEach(id => {
+                const tabContainer = document.getElementById(`tab-${id}`);
+                if (!tabContainer) return;
+                const iframe = tabContainer.querySelector('iframe');
+                if (!iframe) return;
+
+                const requiredW = tools[id].minMobileWidth || 360;
+
+                // Si estamos en un celular más angosto que el ancho requerido por la herramienta (ej. Drops < 435px)
+                if (autoFitMobile && screenW < requiredW) {
+                    const scale = screenW / requiredW;
+                    iframe.style.width = `${requiredW}px`;
+                    iframe.style.height = `${Math.ceil(100 / scale)}%`;
+                    iframe.style.minHeight = `${Math.ceil(82 / scale)}vh`;
+                    iframe.style.transform = `scale(${scale})`;
+                    iframe.style.transformOrigin = 'top left';
+                } else {
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.minHeight = '82vh';
+                    iframe.style.transform = 'none';
+                }
+            });
+
+            if (fitBtnLabel) {
+                fitBtnLabel.textContent = autoFitMobile ? 'Encuadre: Auto' : 'Encuadre: 100%';
+            }
+        }
+
+        function toggleMobileFit() {
+            autoFitMobile = !autoFitMobile;
+            applyResponsiveIframeScale();
+        }
+
+        // ==========================================
+        // MOTOR DE AUDIO GLOBAL (Diapasón y Metrónomo)
+        // ==========================================
+        let globalAudioCtx = null;
+
+        function getAudioContext() {
+            if (!globalAudioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                globalAudioCtx = new AudioContextClass();
+            }
+            if (globalAudioCtx.state === 'suspended') {
+                globalAudioCtx.resume();
+            }
+            return globalAudioCtx;
+        }
+
+        // --- 1. DIAPASÓN (Tuner / Reference Pitch) ---
+        let tunerOsc = null;
+        let tunerGain = null;
+        let isTunerPlaying = false;
+        let baseA4 = 440;
+        let currentSemitoneOffset = 0;
+
+        function calculateFrequency(semitoneOffset, a4 = 440) {
+            return a4 * Math.pow(2, semitoneOffset / 12);
+        }
+
+        function toggleTuner() {
+            const btn = document.getElementById('tuner-toggle-btn');
+
+            if (isTunerPlaying) {
+                stopTuner();
+            } else {
+                const ctx = getAudioContext();
+                const freq = calculateFrequency(currentSemitoneOffset, baseA4);
+                const waveType = document.getElementById('tuner-wave').value;
+
+                tunerOsc = ctx.createOscillator();
+                tunerGain = ctx.createGain();
+
+                tunerOsc.type = waveType;
+                tunerOsc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+                tunerGain.gain.setValueAtTime(0.001, ctx.currentTime);
+                tunerGain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.05);
+
+                tunerOsc.connect(tunerGain);
+                tunerGain.connect(ctx.destination);
+                tunerOsc.start();
+
+                isTunerPlaying = true;
+                btn.innerHTML = '<i class="fa-solid fa-stop mr-1.5"></i> Detener Tono';
+                btn.classList.replace('bg-blue-600', 'bg-rose-600');
+                btn.classList.replace('hover:bg-blue-500', 'hover:bg-rose-500');
+                updateUtilityBadge();
+            }
+        }
+
+        function stopTuner() {
+            if (tunerOsc && tunerGain && globalAudioCtx) {
+                const now = globalAudioCtx.currentTime;
+                tunerGain.gain.setValueAtTime(tunerGain.gain.value, now);
+                tunerGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+                setTimeout(() => {
+                    try { tunerOsc.stop(); tunerOsc.disconnect(); } catch (e) {}
+                    tunerOsc = null;
+                }, 50);
+            }
+            isTunerPlaying = false;
+            const btn = document.getElementById('tuner-toggle-btn');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-play mr-1.5"></i> Sonar Diapasón';
+                btn.classList.replace('bg-rose-600', 'bg-blue-600');
+                btn.classList.replace('hover:bg-rose-500', 'hover:bg-blue-500');
+            }
+            updateUtilityBadge();
+        }
+
+        function updateTunerSettings() {
+            const noteSelect = document.getElementById('tuner-note');
+            const a4Input = document.getElementById('tuner-a4');
+            const waveSelect = document.getElementById('tuner-wave');
+            const freqDisplay = document.getElementById('tuner-freq-display');
+
+            currentSemitoneOffset = parseInt(noteSelect.value);
+            baseA4 = parseFloat(a4Input.value) || 440;
+
+            const freq = calculateFrequency(currentSemitoneOffset, baseA4);
+            freqDisplay.textContent = `${freq.toFixed(1)} Hz`;
+
+            if (isTunerPlaying && tunerOsc && globalAudioCtx) {
+                tunerOsc.type = waveSelect.value;
+                tunerOsc.frequency.setTargetAtTime(freq, globalAudioCtx.currentTime, 0.02);
+            }
+        }
+
+        // --- 2. METRÓNOMO GLOBAL ---
+        let isMetronomePlaying = false;
+        let metronomeBpm = 120;
+        let beatsPerMeasure = 4;
+        let currentBeat = 0;
+        let metronomeTimer = null;
+        let tapTimes = [];
+
+        function playMetronomeClick(isAccent) {
+            const ctx = getAudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(isAccent ? 1100 : 750, ctx.currentTime);
+
+            gain.gain.setValueAtTime(0.35, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.05);
+
+            const pulseDot = document.getElementById('metro-pulse-dot');
+            if (pulseDot) {
+                pulseDot.className = isAccent 
+                    ? 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399] transition-transform scale-125'
+                    : 'w-3 h-3 rounded-full bg-blue-400 shadow-[0_0_8px_#60a5fa] transition-transform scale-110';
+                setTimeout(() => {
+                    if (pulseDot) pulseDot.className = 'w-3 h-3 rounded-full bg-slate-600 transition-transform scale-100';
+                }, 90);
+            }
+        }
+
+        function toggleMetronome() {
+            const btn = document.getElementById('metro-toggle-btn');
+            if (isMetronomePlaying) {
+                stopMetronome();
+            } else {
+                getAudioContext();
+                isMetronomePlaying = true;
+                currentBeat = 0;
+                scheduleMetronomeLoop();
+                btn.innerHTML = '<i class="fa-solid fa-stop mr-1.5"></i> Detener';
+                btn.classList.replace('bg-emerald-600', 'bg-rose-600');
+                btn.classList.replace('hover:bg-emerald-500', 'hover:bg-rose-500');
+                updateUtilityBadge();
+            }
+        }
+
+        function stopMetronome() {
+            isMetronomePlaying = false;
+            if (metronomeTimer) {
+                clearInterval(metronomeTimer);
+                metronomeTimer = null;
+            }
+            const btn = document.getElementById('metro-toggle-btn');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-play mr-1.5"></i> Iniciar';
+                btn.classList.replace('bg-rose-600', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-rose-500', 'hover:bg-emerald-500');
+            }
+            updateUtilityBadge();
+        }
+
+        function scheduleMetronomeLoop() {
+            if (metronomeTimer) clearInterval(metronomeTimer);
+            const intervalMs = (60 / metronomeBpm) * 1000;
+            
+            playMetronomeClick(currentBeat === 0);
+            currentBeat = (currentBeat + 1) % beatsPerMeasure;
+
+            metronomeTimer = setInterval(() => {
+                if (!isMetronomePlaying) return;
+                playMetronomeClick(currentBeat === 0);
+                currentBeat = (currentBeat + 1) % beatsPerMeasure;
+            }, intervalMs);
+        }
+
+        function updateMetronomeBpm(val) {
+            metronomeBpm = Math.max(40, Math.min(240, parseInt(val) || 120));
+            document.getElementById('metro-bpm-slider').value = metronomeBpm;
+            document.getElementById('metro-bpm-label').textContent = `${metronomeBpm} BPM`;
+            if (isMetronomePlaying) {
+                scheduleMetronomeLoop();
+            }
+        }
+
+        function updateMetronomeMeter(val) {
+            beatsPerMeasure = parseInt(val) || 4;
+            currentBeat = 0;
+        }
+
+        function tapTempo() {
+            const now = performance.now();
+            tapTimes.push(now);
+            if (tapTimes.length > 4) tapTimes.shift();
+
+            if (tapTimes.length >= 2) {
+                let intervals = [];
+                for (let i = 1; i < tapTimes.length; i++) {
+                    intervals.push(tapTimes[i] - tapTimes[i - 1]);
+                }
+                const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+                if (avgInterval < 2000) {
+                    const calculatedBpm = Math.round(60000 / avgInterval);
+                    updateMetronomeBpm(calculatedBpm);
+                } else {
+                    tapTimes = [now];
+                }
+            }
+        }
+
+        function updateUtilityBadge() {
+            const badge = document.getElementById('utility-active-badge');
+            const badgeMobile = document.getElementById('utility-active-badge-mobile');
+            const isActive = isTunerPlaying || isMetronomePlaying;
+            if (badge) badge.classList.toggle('hidden', !isActive);
+            if (badgeMobile) badgeMobile.classList.toggle('hidden', !isActive);
+        }
+
+        // --- 3. CAJÓN DE UTILIDADES Y BLOC DE NOTAS ---
+        function toggleUtilityDrawer() {
+            const drawer = document.getElementById('utility-drawer');
+            isUtilityDrawerOpen = !isUtilityDrawerOpen;
+            drawer.classList.toggle('hidden', !isUtilityDrawerOpen);
+        }
+
+        function saveQuickNotes(val) {
+            localStorage.setItem('opuslab_quick_notes', val);
+            const status = document.getElementById('notes-save-status');
+            if (status) {
+                status.textContent = 'Guardado ✓';
+                setTimeout(() => { status.textContent = 'Auto-guardado local'; }, 1500);
+            }
+        }
+
+        function clearQuickNotes() {
+            const area = document.getElementById('quick-notes-area');
+            if (area && area.value.trim() !== '') {
+                area.value = '';
+                saveQuickNotes('');
+            }
+        }
+
+        function downloadQuickNotes() {
+            const text = document.getElementById('quick-notes-area').value;
+            const blob = new Blob([text || 'Sin apuntes en OpusLab 3.0'], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Apuntes_OpusLab.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // --- 4. SOPORTE PWA EMBEBIDO ---
+        function setupEmbeddedPWA() {
+            const manifest = {
+                name: "OpusLab 3.0 - Entorno de Herramientas Musicales",
+                short_name: "OpusLab 3.0",
+                description: "Suite interactiva de herramientas de teoría musical, armonía, drops y mapas tonales.",
+                start_url: window.location.origin + window.location.pathname,
+                display: "standalone",
+                background_color: "#0f172a",
+                theme_color: "#2563eb",
+                icons: [
+                    {
+                        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%232563eb'/%3E%3Cpath d='M195 112h122v32h-25v75l90 145a41 41 0 0 1-35 62H165a41 41 0 0 1-35-62l90-145v-75h-25v-32zm51 125l-68 110h156l-68-110v-93h-20v93z' fill='white'/%3E%3C/svg%3E",
+                        sizes: "512x512",
+                        type: "image/svg+xml",
+                        purpose: "any maskable"
+                    }
+                ]
+            };
+            const stringManifest = JSON.stringify(manifest);
+            const blob = new Blob([stringManifest], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            document.head.appendChild(link);
+        }
+
+        // ==========================================
+        // NAVEGACIÓN DE PESTAÑAS Y MODO ZEN
+        // ==========================================
         function showLoading() {
             const overlay = document.getElementById('loading-overlay');
             if (overlay) overlay.classList.remove('hidden');
@@ -47,58 +395,72 @@
             if (overlay) overlay.classList.add('hidden');
         }
 
-        function switchTab(tabId, buttonElement) {
-            if (currentTabId === tabId) return;
+        function switchTab(tabId, buttonElement, updateHistory = true, customQueryString = null) {
+            if (!tools[tabId]) return;
 
-            // 1. Update Navigation Styles
+            if (!buttonElement) {
+                buttonElement = document.querySelector(`button[data-tab="${tabId}"]`);
+            }
+
             const allButtons = document.querySelectorAll('.tab-button');
             allButtons.forEach(btn => {
                 btn.classList.remove('active', 'border-blue-500', 'text-blue-400');
                 btn.classList.add('border-transparent', 'text-slate-300');
-                // Reset background on active state change
                 btn.style.background = ''; 
             });
 
-            buttonElement.classList.remove('border-transparent', 'text-slate-300');
-            buttonElement.classList.add('active', 'border-blue-500', 'text-blue-400');
+            if (buttonElement) {
+                buttonElement.classList.remove('border-transparent', 'text-slate-300');
+                buttonElement.classList.add('active', 'border-blue-500', 'text-blue-400');
+                buttonElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
 
-            // 2. Hide all tabs and prepare to show the new one
             Object.keys(tools).forEach(id => {
                 const el = document.getElementById(`tab-${id}`);
                 if (el) {
-                    el.classList.add('hidden');
-                    el.classList.remove('fade-in');
+                    el.classList.add('tab-offscreen');
+                    el.classList.remove('tab-active', 'fade-in');
                 }
             });
 
-            // 3. Update Header
             const tool = tools[tabId];
             document.getElementById('current-tool-title').innerHTML = `${tool.iconHtml} ${tool.title}`;
 
-            // 4. Show the selected tab
             const tabContainer = document.getElementById(`tab-${tabId}`);
             const iframe = tabContainer.querySelector('iframe');
             
-            // Lazy load the iframe if it hasn't been loaded yet
-            if (iframe.getAttribute('data-src')) {
+            if (customQueryString) {
+                showLoading();
+                iframe.src = tool.url + customQueryString;
+                iframe.removeAttribute('data-src');
+            } else if (iframe.getAttribute('data-src')) {
                 showLoading();
                 iframe.src = iframe.getAttribute('data-src');
-                iframe.removeAttribute('data-src'); // Prevent reloading next time
+                iframe.removeAttribute('data-src');
             }
             
-            tabContainer.classList.remove('hidden');
-            // Force a reflow to restart the animation
-            void tabContainer.offsetWidth; 
+            tabContainer.classList.remove('tab-offscreen');
+            tabContainer.classList.add('tab-active');
+            void tabContainer.offsetWidth;
             tabContainer.classList.add('fade-in');
             
             currentTabId = tabId;
+            applyResponsiveIframeScale();
+
+            localStorage.setItem('opuslab_last_tab', tabId);
+            
+            if (updateHistory) {
+                const newUrl = new URL(window.location.href);
+                const toolParam = tool.alias || tabId;
+                newUrl.searchParams.set('tool', toolParam);
+                window.history.replaceState({ tabId: tabId }, '', newUrl);
+            }
         }
 
         function reloadCurrentTab() {
             showLoading();
             const tabContainer = document.getElementById(`tab-${currentTabId}`);
             const iframe = tabContainer.querySelector('iframe');
-            // Force reload by setting src to itself
             const currentSrc = iframe.src;
             iframe.src = '';
             setTimeout(() => {
@@ -106,214 +468,197 @@
             }, 50);
         }
 
+        function toggleZenMode() {
+            const header = document.getElementById('main-header');
+            const mobileBar = document.getElementById('mobile-title-bar');
+            const footer = document.getElementById('main-footer');
+            const exitZenBtn = document.getElementById('exit-zen-btn');
+
+            isZenMode = !isZenMode;
+
+            if (isZenMode) {
+                header.classList.add('hidden');
+                mobileBar.classList.add('!hidden');
+                footer.classList.add('hidden');
+                exitZenBtn.classList.remove('hidden');
+            } else {
+                header.classList.remove('hidden');
+                mobileBar.classList.remove('!hidden');
+                footer.classList.remove('hidden');
+                exitZenBtn.classList.add('hidden');
+            }
+        }
+
+        function scrollTabs(direction) {
+            const nav = document.getElementById('tabs-nav');
+            const scrollAmount = 180;
+            nav.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+
+        function updateScrollIndicators() {
+            const nav = document.getElementById('tabs-nav');
+            const leftBtn = document.getElementById('scroll-left-btn');
+            const rightBtn = document.getElementById('scroll-right-btn');
+            if (!nav || !leftBtn || !rightBtn) return;
+
+            const isScrollable = nav.scrollWidth > nav.clientWidth + 4;
+            if (!isScrollable) {
+                leftBtn.classList.add('hidden');
+                rightBtn.classList.add('hidden');
+                return;
+            }
+
+            leftBtn.classList.toggle('hidden', nav.scrollLeft <= 10);
+            rightBtn.classList.toggle('hidden', nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 10);
+        }
+
+        // Inicialización Principal
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Read the main URL parameters
+            setupEmbeddedPWA();
+            applyResponsiveIframeScale();
+
+            const savedNotes = localStorage.getItem('opuslab_quick_notes');
+            const notesArea = document.getElementById('quick-notes-area');
+            if (savedNotes && notesArea) {
+                notesArea.value = savedNotes;
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
-            
-            // 2. Detect the tool parameter
-            const toolToLoad = urlParams.get('tool');
+            const toolParam = urlParams.get('tool');
+            const savedTab = localStorage.getItem('opuslab_last_tab');
 
-            // 3. Routing logic based on the tool
-            if (toolToLoad === 'leadsheet') {
-                const targetTabId = 'aprox-leadsheet';
-                
-                // Get the tab button element to simulate the activation styles
-                // We use a query selector to find the button associated with this tabId
-                const targetButton = document.querySelector(`button[onclick*="'${targetTabId}'"]`);
-                
-                if (targetButton) {
-                    // Activate the tab using the existing function
-                    switchTab(targetTabId, targetButton);
+            let targetTabId = null;
+            if (toolParam) {
+                targetTabId = Object.keys(tools).find(key => key === toolParam || tools[key].alias === toolParam);
+            }
 
-                    // 4. Inject all URL parameters into the iframe src
-                    const tabContainer = document.getElementById(`tab-${targetTabId}`);
-                    const iframe = tabContainer.querySelector('iframe');
-                    
-                    // The switchTab function handles lazy loading by reading data-src.
-                    // If it was just lazy loaded, it moved data-src to src.
-                    // We need to append the parameters to whatever the current src is.
-                    
-                    // Base URL of the iframe (without parameters)
-                    const baseUrl = 'https://juanmiguel0927.github.io/AproxLeadSheet/';
-                    
-                    // Reconstruct the full window.location.search string (e.g. "?tool=leadsheet&prog=6")
-                    const queryString = window.location.search;
-                    
-                    // Set the new source with parameters
-                    iframe.src = baseUrl + queryString;
+            if (targetTabId) {
+                const hasExtraParams = Array.from(urlParams.keys()).some(k => k !== 'tool');
+                const queryString = hasExtraParams ? window.location.search : null;
+                switchTab(targetTabId, null, false, queryString);
+            } else if (savedTab && tools[savedTab]) {
+                switchTab(savedTab, null, true);
+            } else {
+                const firstIframe = document.querySelector('#tab-serie-armonica iframe');
+                if (firstIframe && firstIframe.getAttribute('data-src')) {
+                    firstIframe.src = firstIframe.getAttribute('data-src');
+                    firstIframe.removeAttribute('data-src');
                 }
             }
-            // Note: You can easily expand this later with `else if (toolToLoad === 'another-tool')`
+
+            const nav = document.getElementById('tabs-nav');
+            nav.addEventListener('scroll', updateScrollIndicators);
+            window.addEventListener('resize', () => {
+                updateScrollIndicators();
+                applyResponsiveIframeScale();
+            });
+            setTimeout(updateScrollIndicators, 150);
+
+            window.addEventListener('keydown', (e) => {
+                if (e.altKey) {
+                    const toolKeys = Object.keys(tools);
+                    const num = parseInt(e.key);
+                    if (num >= 1 && num <= toolKeys.length) {
+                        e.preventDefault();
+                        switchTab(toolKeys[num - 1]);
+                    } else if (e.key.toLowerCase() === 'z') {
+                        e.preventDefault();
+                        toggleZenMode();
+                    } else if (e.key.toLowerCase() === 'u') {
+                        e.preventDefault();
+                        toggleUtilityDrawer();
+                    } else if (e.key.toLowerCase() === 'r') {
+                        e.preventDefault();
+                        reloadCurrentTab();
+                    }
+                }
+            });
         });
     </script>
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0f172a; /* Slate 900 for a deep, modern tech look */
-            color: #e2e8f0; /* Slate 200 for text */
+            background-color: #0f172a;
+            color: #e2e8f0;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevent body scroll, let content area scroll */
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #1e293b; /* Slate 800 */
+            background: #1e293b;
         }
         ::-webkit-scrollbar-thumb {
-            background: #475569; /* Slate 600 */
+            background: #475569;
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; /* Slate 500 */
+            background: #64748b;
         }
 
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Changed from right to bottom border */
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .tab-button {
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
         .tab-button.active {
-            background: rgba(59, 130, 246, 0.15); /* Blue 500 subtle background */
-            border-bottom-color: #3b82f6; /* Blue 500 border bottom for horizontal layout */
-            color: #60a5fa; /* Blue 400 text */
+            background: rgba(59, 130, 246, 0.15);
+            border-bottom-color: #3b82f6;
+            color: #60a5fa;
         }
         .tab-button:hover:not(.active) {
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* Iframe container styling */
         .iframe-container {
             width: 100%;
             height: 100%;
+            min-height: 82vh;
             border: none;
-            background-color: white; /* Ensure iframes have white background if they are transparent */
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-color: white;
+            display: block;
+        }
+
+        .tab-active {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            visibility: visible;
+            z-index: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .tab-offscreen {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            pointer-events: none;
+            z-index: -1;
         }
         
         .fade-in {
-            animation: fadeIn 0.4s ease-in-out;
+            animation: fadeIn 0.35s ease-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
-    </style>
-</head>
-<body class="h-screen flex flex-col overflow-hidden">
 
-    <!-- Top Navigation Header -->
-    <header class="glass-panel flex-shrink-0 z-20 flex flex-col sm:flex-row items-center justify-between px-6 py-3">
-        <!-- Logo Area -->
-        <div class="flex items-center gap-3 mb-3 sm:mb-0">
-            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <i class="fa-solid fa-flask text-white text-xl"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight text-white">OpusLab <span class="text-blue-400">3.0</span></h1>
-                <p class="text-xs text-slate-400">Entorno de Herramientas</p>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs (Horizontal) -->
-        <nav class="flex overflow-x-auto space-x-2 pb-1 sm:pb-0 w-full sm:w-auto hide-scrollbar">
-            <button onclick="switchTab('serie-armonica', this)" class="tab-button active flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-t-lg border-b-2 border-blue-500 text-blue-400 whitespace-nowrap">
-                <i class="fa-solid fa-wave-square"></i>
-                <span class="font-medium">Serie Armónica</span>
-            </button>
-            
-            <button onclick="switchTab('drops', this)" class="tab-button flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap">
-                <i class="fa-solid fa-music"></i>
-                <span class="font-medium">Drops</span>
-            </button>
-            
-            <button onclick="switchTab('armaduras', this)" class="tab-button flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap">
-                <span class="font-serif text-lg leading-none tracking-tighter pt-0.5">𝄞𝄢</span>
-                <span class="font-medium">Armaduras</span>
-            </button>
-            
-            <button onclick="switchTab('aprox-leadsheet', this)" class="tab-button flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap">
-                <i class="fa-solid fa-file-lines"></i>
-                <span class="font-medium">Aprox. Lead Sheet</span>
-            </button>
-            
-            <button onclick="switchTab('mapa-tonal', this)" class="tab-button flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap">
-                <i class="fa-solid fa-map"></i>
-                <span class="font-medium">Mapa Tonal</span>
-            </button>
-        </nav>
-        
-        <!-- Controls (Hidden on very small screens, visible on md and up) -->
-        <div class="hidden md:flex items-center gap-2 ml-4">
-             <button class="text-slate-400 hover:text-white transition-colors p-2 rounded-full hover:bg-slate-700" title="Recargar herramienta" onclick="reloadCurrentTab()">
-                <i class="fa-solid fa-rotate-right"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-full bg-slate-900 relative">
-        
-        <!-- Tool Title Bar (Optional, might be redundant with tabs, but kept for clarity on mobile) -->
-        <div class="h-10 flex items-center px-6 border-b border-slate-800 bg-slate-900/50 sm:hidden">
-             <h2 id="current-tool-title" class="text-sm font-semibold text-slate-300">
-                <i class="fa-solid fa-wave-square mr-2 text-blue-400"></i> Serie Armónica
-            </h2>
-        </div>
-
-        <!-- Content Container -->
-        <div class="flex-1 overflow-hidden relative">
-            
-            <!-- Loading Indicator Overlay -->
-            <div id="loading-overlay" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
-                <div class="w-12 h-12 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
-                <p class="mt-4 text-slate-300 font-medium">Cargando herramienta...</p>
-            </div>
-
-            <!-- Iframes (Pre-loaded for faster switching) -->
-            <div id="tab-serie-armonica" class="w-full h-full fade-in">
-                <iframe src="https://juanmiguel0927.github.io/SerieArmonica/" class="iframe-container !rounded-none shadow-none" title="Serie Armónica" onload="hideLoading()"></iframe>
-            </div>
-
-            <div id="tab-drops" class="w-full h-full hidden">
-                <!-- Using data-src to lazy load when tab is clicked for the first time -->
-                <iframe data-src="https://juanmiguel0927.github.io/Drops/" class="iframe-container !rounded-none shadow-none" title="Drops" onload="hideLoading()"></iframe>
-            </div>
-
-            <div id="tab-armaduras" class="w-full h-full hidden">
-                <iframe data-src="https://juanmiguel0927.github.io/Armaduras/" class="iframe-container !rounded-none shadow-none" title="Armaduras" onload="hideLoading()"></iframe>
-            </div>
-
-            <div id="tab-aprox-leadsheet" class="w-full h-full hidden">
-                <iframe data-src="https://juanmiguel0927.github.io/AproxLeadSheet/" class="iframe-container !rounded-none shadow-none" title="Aproximación al Lead Sheet" onload="hideLoading()"></iframe>
-            </div>
-
-            <div id="tab-mapa-tonal" class="w-full h-full hidden">
-                <iframe data-src="https://juanmiguel0927.github.io/MapaTonal/" class="iframe-container !rounded-none shadow-none" title="Mapa Tonal" onload="hideLoading()"></iframe>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer for Credits -->
-    <footer class="glass-panel py-2 px-4 text-center border-t border-slate-700/50 z-20">
-        <p class="text-xs text-slate-400">
-            Creado por <span class="font-semibold text-slate-300">Juan Miguel Rios Redondo</span>
-        </p>
-    </footer>
-
-    <!-- Style to hide scrollbar on the nav if it overflows on mobile -->
-    <style>
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -322,5 +667,275 @@
             scrollbar-width: none;
         }
     </style>
+</head>
+<body class="min-h-[100dvh] flex flex-col">
+
+    <!-- Botón flotante para salir del Modo Zen -->
+    <button id="exit-zen-btn" onclick="toggleZenMode()" class="hidden fixed bottom-4 right-4 z-50 bg-slate-900/90 hover:bg-blue-600 text-slate-200 hover:text-white px-3.5 py-2 rounded-full shadow-lg border border-slate-700 backdrop-blur-md transition-all flex items-center gap-2 text-xs font-medium group" title="Salir de Pantalla Completa (Alt + Z)">
+        <i class="fa-solid fa-compress text-blue-400 group-hover:text-white transition-colors"></i>
+        <span>Mostrar Menú</span>
+    </button>
+
+    <!-- CAJÓN FLOTANTE DE HERRAMIENTAS GLOBALES -->
+    <aside id="utility-drawer" class="hidden fixed top-14 right-2 sm:right-6 z-40 w-[92vw] max-w-sm bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl p-4 text-slate-200 fade-in">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-blue-400"></i>
+                <h3 class="font-semibold text-sm text-white">Utilidades Globales</h3>
+            </div>
+            <button onclick="toggleUtilityDrawer()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors" title="Cerrar (Alt + U)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+            <!-- 1. Diapasón / Tono de Referencia -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-volume-high"></i> Diapasón de Referencia
+                    </span>
+                    <span id="tuner-freq-display" class="text-xs font-mono font-bold bg-slate-900 px-2 py-0.5 rounded text-slate-300 border border-slate-700">440.0 Hz</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 mb-2.5 text-xs">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Nota</label>
+                        <select id="tuner-note" onchange="updateTunerSettings()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-blue-500">
+                            <option value="-9">C4 (Do)</option>
+                            <option value="-8">C#4 / Db4</option>
+                            <option value="-7">D4 (Re)</option>
+                            <option value="-6">D#4 / Eb4</option>
+                            <option value="-5">E4 (Mi)</option>
+                            <option value="-4">F4 (Fa)</option>
+                            <option value="-3">F#4 / Gb4</option>
+                            <option value="-2">G4 (Sol)</option>
+                            <option value="-1">G#4 / Ab4</option>
+                            <option value="0" selected>A4 (La)</option>
+                            <option value="1">A#4 / Bb4</option>
+                            <option value="2">B4 (Si)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Calibración A4</label>
+                        <input id="tuner-a4" type="number" min="415" max="466" value="440" onchange="updateTunerSettings()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Timbre</label>
+                        <select id="tuner-wave" onchange="updateTunerSettings()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-blue-500">
+                            <option value="sine">Puro (Senoidal)</option>
+                            <option value="triangle" selected>Suave (Triang.)</option>
+                            <option value="sawtooth">Brillante (Sierra)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="tuner-toggle-btn" onclick="toggleTuner()" class="w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg shadow transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-play mr-1.5"></i> Sonar Diapasón
+                </button>
+            </div>
+
+            <!-- 2. Metrónomo Global -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock"></i> Metrónomo
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <div id="metro-pulse-dot" class="w-3 h-3 rounded-full bg-slate-600 transition-transform"></div>
+                        <span id="metro-bpm-label" class="text-xs font-mono font-bold bg-slate-900 px-2 py-0.5 rounded text-slate-300 border border-slate-700">120 BPM</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 mb-2.5">
+                    <button onclick="updateMetronomeBpm(metronomeBpm - 1)" class="bg-slate-900 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700 text-xs">-1</button>
+                    <input id="metro-bpm-slider" type="range" min="40" max="240" value="120" oninput="updateMetronomeBpm(this.value)" class="flex-1 accent-emerald-500 cursor-pointer">
+                    <button onclick="updateMetronomeBpm(metronomeBpm + 1)" class="bg-slate-900 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-700 text-xs">+1</button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                    <select onchange="updateMetronomeMeter(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-emerald-500" title="Compás">
+                        <option value="4" selected>4/4</option>
+                        <option value="3">3/4</option>
+                        <option value="2">2/4</option>
+                        <option value="6">6/8</option>
+                        <option value="1">Libre (Sin acento)</option>
+                    </select>
+                    <button onclick="tapTempo()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-1.5 px-2 rounded-lg transition-colors">
+                        <i class="fa-solid fa-hand-pointer mr-1"></i> Tap
+                    </button>
+                    <button id="metro-toggle-btn" onclick="toggleMetronome()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-1.5 px-2 rounded-lg shadow transition-colors flex items-center justify-center">
+                        <i class="fa-solid fa-play mr-1.5"></i> Iniciar
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Bloc de Notas Rápido Persistente -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-note-sticky"></i> Apuntes de Sesión
+                    </span>
+                    <span id="notes-save-status" class="text-[10px] text-slate-400">Auto-guardado local</span>
+                </div>
+                <textarea id="quick-notes-area" rows="3" oninput="saveQuickNotes(this.value)" placeholder="Escribe cifrados, progresiones (ej. Dm7 - G7 - Cmaj7) o recordatorios mientras cambias de pestaña..." class="w-full bg-slate-900/90 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 resize-y mb-2"></textarea>
+                <div class="flex justify-end gap-2">
+                    <button onclick="clearQuickNotes()" class="text-[11px] text-slate-400 hover:text-rose-400 px-2 py-1 rounded hover:bg-slate-900 transition-colors">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Limpiar
+                    </button>
+                    <button onclick="downloadQuickNotes()" class="text-[11px] bg-slate-900 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg transition-colors">
+                        <i class="fa-solid fa-download mr-1"></i> Exportar .txt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Barra de Navegación Superior -->
+    <header id="main-header" class="glass-panel flex-shrink-0 z-20 flex flex-col lg:flex-row items-center justify-between px-4 sm:px-6 py-2.5 gap-2">
+        <!-- Área del Logo y Controles Móviles Rápidos -->
+        <div class="flex items-center justify-between w-full lg:w-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-flask text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">OpusLab <span class="text-blue-400">3.0</span></h1>
+                    <p class="text-[11px] text-slate-400">Entorno de Herramientas</p>
+                </div>
+            </div>
+
+            <!-- Botones de acción visibles en móvil/tablet en la esquina superior derecha -->
+            <div class="flex lg:hidden items-center gap-1">
+                <button class="relative text-slate-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800" title="Utilidades: Diapasón, Metrónomo y Notas (Alt + U)" onclick="toggleUtilityDrawer()">
+                    <i class="fa-solid fa-sliders text-sm text-blue-400"></i>
+                    <span id="utility-active-badge-mobile" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
+                </button>
+                <button class="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800" title="Modo Zen / Pantalla Completa (Alt + Z)" onclick="toggleZenMode()">
+                    <i class="fa-solid fa-expand text-sm"></i>
+                </button>
+                <button class="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800" title="Recargar herramienta (Alt + R)" onclick="reloadCurrentTab()">
+                    <i class="fa-solid fa-rotate-right text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor de Pestañas con Indicadores de Desplazamiento -->
+        <div class="relative flex items-center w-full lg:w-auto max-w-full overflow-hidden">
+            <button id="scroll-left-btn" onclick="scrollTabs(-1)" class="hidden absolute left-0 z-10 h-full px-2 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent text-slate-300 hover:text-white flex items-center justify-center">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+
+            <nav id="tabs-nav" class="flex overflow-x-auto space-x-1.5 sm:space-x-2 w-full lg:w-auto hide-scrollbar px-1">
+                <button data-tab="serie-armonica" onclick="switchTab('serie-armonica', this)" title="Serie Armónica (Alt + 1)" class="tab-button active flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-t-lg border-b-2 border-blue-500 text-blue-400 whitespace-nowrap text-sm">
+                    <i class="fa-solid fa-wave-square"></i>
+                    <span class="font-medium">Serie Armónica</span>
+                    <span class="hidden xl:inline-block text-[10px] font-mono opacity-50 bg-slate-800 px-1.5 py-0.5 rounded ml-1">Alt+1</span>
+                </button>
+                
+                <button data-tab="drops" onclick="switchTab('drops', this)" title="Drops (Alt + 2)" class="tab-button flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap text-sm">
+                    <i class="fa-solid fa-music"></i>
+                    <span class="font-medium">Drops</span>
+                    <span class="hidden xl:inline-block text-[10px] font-mono opacity-50 bg-slate-800 px-1.5 py-0.5 rounded ml-1">Alt+2</span>
+                </button>
+                
+                <button data-tab="armaduras" onclick="switchTab('armaduras', this)" title="Armaduras (Alt + 3)" class="tab-button flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap text-sm">
+                    <span class="font-serif text-lg leading-none tracking-tighter pt-0.5">𝄞𝄢</span>
+                    <span class="font-medium">Armaduras</span>
+                    <span class="hidden xl:inline-block text-[10px] font-mono opacity-50 bg-slate-800 px-1.5 py-0.5 rounded ml-1">Alt+3</span>
+                </button>
+                
+                <button data-tab="aprox-leadsheet" onclick="switchTab('aprox-leadsheet', this)" title="Aproximación al Lead Sheet (Alt + 4)" class="tab-button flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap text-sm">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span class="font-medium">Aprox. Lead Sheet</span>
+                    <span class="hidden xl:inline-block text-[10px] font-mono opacity-50 bg-slate-800 px-1.5 py-0.5 rounded ml-1">Alt+4</span>
+                </button>
+                
+                <button data-tab="mapa-tonal" onclick="switchTab('mapa-tonal', this)" title="Mapa Tonal (Alt + 5)" class="tab-button flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-t-lg border-b-2 border-transparent text-slate-300 whitespace-nowrap text-sm">
+                    <i class="fa-solid fa-map"></i>
+                    <span class="font-medium">Mapa Tonal</span>
+                    <span class="hidden xl:inline-block text-[10px] font-mono opacity-50 bg-slate-800 px-1.5 py-0.5 rounded ml-1">Alt+5</span>
+                </button>
+            </nav>
+
+            <button id="scroll-right-btn" onclick="scrollTabs(1)" class="hidden absolute right-0 z-10 h-full px-2 bg-gradient-to-l from-slate-900 via-slate-900/90 to-transparent text-slate-300 hover:text-white flex items-center justify-center">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+        </div>
+        
+        <!-- Controles de Escritorio (Utilidades, Modo Zen y Recargar) -->
+        <div class="hidden lg:flex items-center gap-1.5 ml-2">
+            <button class="relative text-slate-300 hover:text-white transition-colors px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 flex items-center gap-1.5 text-xs font-medium" title="Abrir Diapasón, Metrónomo y Bloc de Notas (Alt + U)" onclick="toggleUtilityDrawer()">
+                <i class="fa-solid fa-sliders text-blue-400"></i>
+                <span>Utilidades</span>
+                <span id="utility-active-badge" class="hidden w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+            </button>
+            <button class="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-700/70 flex items-center gap-1.5 text-xs font-medium" title="Modo Zen / Ocultar barras (Alt + Z)" onclick="toggleZenMode()">
+                <i class="fa-solid fa-expand"></i>
+                <span class="hidden 2xl:inline">Zen</span>
+            </button>
+            <button class="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-700/70" title="Recargar herramienta actual (Alt + R)" onclick="reloadCurrentTab()">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Área de Contenido Principal -->
+    <main class="flex-1 flex flex-col bg-slate-900 relative overflow-hidden">
+        
+        <!-- Barra de título de herramienta activa y control de encuadre (solo visible en celulares) -->
+        <div id="mobile-title-bar" class="h-9 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 sm:hidden flex-shrink-0">
+            <h2 id="current-tool-title" class="text-xs font-semibold text-slate-300 flex items-center">
+                <i class="fa-solid fa-wave-square mr-2 text-blue-400"></i> Serie Armónica
+            </h2>
+            <button onclick="toggleMobileFit()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-2 py-0.5 rounded flex items-center gap-1 transition-colors" title="Alternar ajuste automático de ancho en pantalla móvil">
+                <i class="fa-solid fa-arrows-left-right-to-line text-[10px]"></i>
+                <span id="mobile-fit-label">Encuadre: Auto</span>
+            </button>
+        </div>
+
+        <!-- Contenedor de los Iframes (Habilitado con scroll y soporte táctil) -->
+        <div class="flex-1 overflow-auto relative w-full h-full" style="-webkit-overflow-scrolling: touch;">
+            
+            <!-- Indicador de carga -->
+            <div id="loading-overlay" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
+                <div class="w-12 h-12 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
+                <p class="mt-4 text-slate-300 font-medium text-sm">Cargando herramienta...</p>
+            </div>
+
+            <!-- Pestaña 1: Serie Armónica -->
+            <div id="tab-serie-armonica" class="tab-active fade-in">
+                <iframe src="https://juanmiguel0927.github.io/SerieArmonica/" class="iframe-container" title="Serie Armónica" onload="hideLoading()"></iframe>
+            </div>
+
+            <!-- Pestaña 2: Drops -->
+            <div id="tab-drops" class="tab-offscreen">
+                <iframe data-src="https://juanmiguel0927.github.io/Drops/" class="iframe-container" title="Drops" onload="hideLoading()"></iframe>
+            </div>
+
+            <!-- Pestaña 3: Armaduras -->
+            <div id="tab-armaduras" class="tab-offscreen">
+                <iframe data-src="https://juanmiguel0927.github.io/Armaduras/" class="iframe-container" title="Armaduras" onload="hideLoading()"></iframe>
+            </div>
+
+            <!-- Pestaña 4: Aproximación al Lead Sheet -->
+            <div id="tab-aprox-leadsheet" class="tab-offscreen">
+                <iframe data-src="https://juanmiguel0927.github.io/AproxLeadSheet/" class="iframe-container" title="Aproximación al Lead Sheet" onload="hideLoading()"></iframe>
+            </div>
+
+            <!-- Pestaña 5: Mapa Tonal -->
+            <div id="tab-mapa-tonal" class="tab-offscreen">
+                <iframe data-src="https://juanmiguel0927.github.io/MapaTonal/" class="iframe-container" title="Mapa Tonal" onload="hideLoading()"></iframe>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pie de Página con Créditos -->
+    <footer id="main-footer" class="glass-panel py-2 px-4 text-center border-t border-slate-700/50 z-20 flex-shrink-0">
+        <p class="text-xs text-slate-400">
+            Creado por <span class="font-semibold text-slate-300">Juan Miguel Rios Redondo</span>
+        </p>
+    </footer>
+
 </body>
 </html>
