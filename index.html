@@ -447,13 +447,21 @@
             currentTabId = tabId;
             applyResponsiveIframeScale();
 
-            localStorage.setItem('opuslab_last_tab', tabId);
+            try {
+                localStorage.setItem('opuslab_last_tab', tabId);
+            } catch (e) {
+                // Ignorar si el almacenamiento local está restringido en el entorno actual
+            }
             
-            if (updateHistory) {
-                const newUrl = new URL(window.location.href);
-                const toolParam = tool.alias || tabId;
-                newUrl.searchParams.set('tool', toolParam);
-                window.history.replaceState({ tabId: tabId }, '', newUrl);
+            if (updateHistory && window.location.protocol !== 'blob:') {
+                try {
+                    const newUrl = new URL(window.location.href);
+                    const toolParam = tool.alias || tabId;
+                    newUrl.searchParams.set('tool', toolParam);
+                    window.history.replaceState({ tabId: tabId }, '', newUrl);
+                } catch (e) {
+                    // Ignorar errores de seguridad de History API en entornos sandboxed/blob
+                }
             }
         }
 
